@@ -5,7 +5,7 @@ from io import StringIO
 from typing import Union
 
 __title__ = "tennet-py"
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 __author__ = "Frank Boerman"
 __license__ = "MIT"
 
@@ -23,7 +23,6 @@ class OutputType(Enum):
 
 
 ## documentation of endpoints: https://www.tennet.org/english/operational_management/export_data_explanation.aspx
-
 
 class TenneTClient:
     BASE_URL = "https://www.tennet.org/english/operational_management/export_data.aspx?exporttype={data_type}" \
@@ -71,4 +70,37 @@ class TenneTClient:
             df['timestamp'] = pd.to_datetime(df['timestamp'], format=self.DATEFORMAT)
             df.drop(columns=['Date', 'Sequence_number'], inplace=True)
 
+        return df
+
+    def query_curent_imbalance(self):
+        # structure is clear enough for pandas to pick it up, use build in http support as well
+        df = pd.read_xml('https://www.tennet.org/xml/balancedelta2017/balans-delta.xml') \
+            .drop(columns=['NUMBER', 'RESERVE_UPWARD_DISPATCH', 'RESERVE_DOWNWARD_DISPATCH', 'TIME'])\
+            .rename(columns=lambda x: x.lower())
+        S = {}
+        h = '23'
+        if pd.Timestamp.now(tz='europe/amsterdam').hour == 0:
+            # we are in the first hour of the day so overlap with yesterday
+            yesterday = (pd.Timestamp.now(tz='europe/amsterdam') - pd.Timedelta(days=1)).strftime("%Y-%m-%d")
+            S_yesterday = pd.Series(
+                data=pd.date_range(yesterday, f'{yesterday} 23:59', tz='europe/amsterdam', freq='1min')
+            )
+            S_yesterday.index += 1
+            S = S_yesterday[S_yesterday.dt.hour>=23].to_dict()
+            h = '01'
+
+        today = pd.Timestamp.now(tz='europe/amsterdam').strftime("%Y-%m-%d")
+        S_today = pd.Series(
+            data=pd.date_range(today, f'{today} {h}:59', tz='europe/amsterdam', freq='1min')
+        )
+        S_today.index += 1
+        S = S | S_today.to_dict()
+        df['timestamp'] = df['sequence_number'].map(S)
+        df = df.set_index('timestamp').sort_index()
+        df = df.rename(columns={
+            'incident_reserve_up_indicator': 'up_indicator',
+            'incident_reserve_down_indicator': 'down_indicator'
+        })
+        df['up_indicator'] = df['up_indicator'].astype(bool)
+        df['down_indicator'] = df['down_indicator'].astype(bool)
         return df
