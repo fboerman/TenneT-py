@@ -37,5 +37,16 @@ data = client.base_request(DataType.settlementprices, d_from=start, d_to=end, ou
 df = client.query_df(DataType.settlementprices, d_from=start, d_to=end)
 ```
 
+## Netztransparenz
+Also supported is a limited number of endpoints of the german TenneT from the Netztransparenz platform. First register and get oauth credentials as explained on the documentation page [here](https://www.netztransparenz.de/en/Web-API)
+Then can be used as follows:
+```python
+from tennet import NetztransparenzClient
+import pandas as pd
+
+client = NetztransparenzClient(oauth_client_id, oauth_client_secret)
+df = client.query_imbalance(start=pd.Timestamp('2023-12-22', tz='europe/amsterdam'), end=pd.Timestamp('2023-12-22 23:59', tz='europe/amsterdam'))
+```
+
 ## Disclaimer
 This is an unoffical package which is not supported or endorsed in any way by TenneT TSO.
