@@ -5,7 +5,7 @@ from io import StringIO
 from typing import Union
 
 __title__ = "tennet-py"
-__version__ = "0.1.1"
+__version__ = "0.2.0"
 __author__ = "Frank Boerman"
 __license__ = "MIT"
 
