@@ -5,7 +5,7 @@ from io import StringIO
 from typing import Union
 
 __title__ = "tennet-py"
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 __author__ = "Frank Boerman"
 __license__ = "MIT"
 
@@ -51,7 +51,7 @@ class TenneTClient:
         r.raise_for_status()
         return r.text
 
-    def query_df(self, data_type: DataType, d_from: Union[str, pd.Timestamp], d_to: Union[str, pd.Timestamp]):
+    def query_df(self, data_type: DataType, d_from: Union[str, pd.Timestamp], d_to: Union[str, pd.Timestamp]) -> pd.DataFrame:
         stream = StringIO(self.base_request(data_type, d_from, d_to, output_type=OutputType.CSV))
         stream.seek(0)
         df = pd.read_csv(stream, sep=',')
@@ -72,7 +72,7 @@ class TenneTClient:
 
         return df
 
-    def query_curent_imbalance(self):
+    def query_curent_imbalance(self) -> pd.DataFrame:
         # structure is clear enough for pandas to pick it up, use build in http support as well
         df = pd.read_xml('https://www.tennet.org/xml/balancedelta2017/balans-delta.xml') \
             .drop(columns=['NUMBER', 'RESERVE_UPWARD_DISPATCH', 'RESERVE_DOWNWARD_DISPATCH', 'TIME'])\
@@ -103,4 +103,18 @@ class TenneTClient:
         })
         df['up_indicator'] = df['up_indicator'].astype(bool)
         df['down_indicator'] = df['down_indicator'].astype(bool)
+        return df
+
+    def query_imbalance_settlement(self, date: pd.Timestamp) -> pd.DataFrame:
+        #UI: https://www.tennet.org/bedrijfsvoering/Systeemgegevens_afhandeling/verrekenprijzen/index.aspx
+        r = self.s.get(f'https://www.tennet.org/xml/imbalanceprice/{date.strftime("%Y%m%d")}.xml')
+        r.raise_for_status()
+        df = pd.read_xml(StringIO(r.text))[['TAKE_FROM_SYSTEM', 'FEED_INTO_SYSTEM', 'REGULATION_STATE']]\
+        .rename(columns={
+            'TAKE_FROM_SYSTEM': 'price_feedout',
+            'FEED_INTO_SYSTEM': 'price_feedin',
+            'REGULATION_STATE': 'state'
+        })
+        df.index = pd.date_range(date.strftime("%Y-%m-%d"), f'{date.strftime("%Y-%m-%d")} 23:59', tz='europe/amsterdam', freq='15min')
+
         return df

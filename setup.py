@@ -38,15 +38,17 @@ setup(
 
     # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 5 - Production/Stable',
 
         'Intended Audience :: Developers',
         'Topic :: Scientific/Engineering',
 
         'License :: OSI Approved :: MIT License',
 
-        'Programming Language :: Python :: 3.8',
+
         'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
     ],
 
     keywords='TenneT data api energy',
@@ -57,7 +59,7 @@ setup(
 
     # List run-time dependencies here.  These will be installed by pip when
     # your project is installed.
-    install_requires=['requests', 'pandas'],
+    install_requires=['requests', 'pandas', 'lxml'],
 
     package_data={
         'tennet-py': ['LICENSE.md', 'README.md'],
