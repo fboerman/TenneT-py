@@ -5,7 +5,7 @@ from io import StringIO
 from typing import Union
 
 __title__ = "tennet-py"
-__version__ = "0.2.1"
+__version__ = "0.2.2"
 __author__ = "Frank Boerman"
 __license__ = "MIT"
 
@@ -36,6 +36,7 @@ class TenneTClient:
         self.s.headers.update({
             'user-agent': 'tennet-py (github.com/fboerman/TenneT-py)'
         })
+        raise Exception("DEPRECATION NOTICE: TenneT.org has been deprecated please use tennet.eu API instead through tenneteu-api")
 
     def base_request(self, data_type: DataType, d_from: Union[str, pd.Timestamp], d_to: Union[str, pd.Timestamp],
                       output_type: OutputType = None) -> str:

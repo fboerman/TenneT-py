@@ -1,4 +1,7 @@
 # TenneT-py
+
+DEPRECATED: TenneT.org has been deprecated. Please move to [tennet.eu API](https://github.com/fboerman/TenneTeu-py) instead.
+
 Python client for ingesting the TenneT System & transmission data API which can be found [here](https://www.tennet.org/english/operational_management/export_data_explanation.aspx).
 It is a public API for which no API key is needed.
 
